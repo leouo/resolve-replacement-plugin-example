@@ -1,18 +1,30 @@
-const path = require('path')
 const ResolveReplacementPlugin = require('./resolve-replacement-plugin')
+const path = require('path')
+const { lstatSync, readdirSync } = require('fs')
+const { join } = path
 
-module.exports = {
+const isDirectory = source => lstatSync(source).isDirectory()
+const getDirectories = source =>
+  readdirSync(source)
+    .map(name => join(source, name))
+    .filter(isDirectory)
+    .map(item => item.split('\\').pop())
+
+const configs = getDirectories('src').map((item) => ({
+  name: item,
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, '..', 'dist'),
-    filename: 'bundle.js'
+    filename: `${item}.js`
   },
   resolve: {
     plugins: [
         new ResolveReplacementPlugin({
             sourceDirectory: path.resolve(__dirname, '..', 'src'),
-            targetDirectory: 'store_1'
+            targetDirectory: item
         })
     ]
   }
-}
+}));
+
+module.exports = configs
