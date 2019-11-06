@@ -10,21 +10,34 @@ const getDirectories = source =>
     .filter(isDirectory)
     .map(item => item.split('\\').pop())
 
-const configs = getDirectories('src').map((item) => ({
-  name: item,
-  entry: './src/index.js',
-  output: {
-    path: path.resolve(__dirname, '..', 'dist'),
-    filename: `${item}.js`
-  },
-  resolve: {
-    plugins: [
-        new ResolveReplacementPlugin({
-            sourceDirectory: path.resolve(__dirname, '..', 'src'),
-            targetDirectory: item
-        })
-    ]
-  }
-}));
+const baseAssetsFolder = 'src';
+const srcPath = path.resolve(__dirname, '..', baseAssetsFolder)
+const distPath = path.resolve(__dirname, '..', 'dist')
+const subDirectories = getDirectories(srcPath)
+
+const configs = (subDirectories || []).length
+  ? subDirectories.map((item) => ({
+    name: item,
+    entry: './src/index.js',
+    output: {
+      path: distPath,
+      filename: `${item}.js`
+    },
+    resolve: {
+      plugins: [
+          new ResolveReplacementPlugin({
+              sourceDirectory: srcPath,
+              targetDirectory: item
+          })
+      ]
+    }
+  }))
+  : {
+    entry: './src/index.js',
+    output: {
+      path: distPath,
+      filename: 'index.js'
+    }
+  };
 
 module.exports = configs
